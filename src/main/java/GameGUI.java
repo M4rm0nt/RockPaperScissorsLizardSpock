@@ -8,15 +8,6 @@ public class GameGUI extends JFrame {
 
     private static final Random RANDOM = new Random();
     private static final Color BACKGROUND_COLOR = Color.DARK_GRAY;
-    private static final Color WIN_COLOR = Color.GREEN;
-    private static final Color LOSE_COLOR = Color.RED.brighter().brighter();
-    private static final Color DRAW_COLOR = Color.YELLOW;
-    private static final Color TEXT_COLOR = Color.WHITE;
-
-    private enum Auswahl {
-        SCHERE, STEIN, PAPIER, ECHSE, SPOCK
-    }
-
     private static final EnumMap<Auswahl, Set<Auswahl>> GEWINNBEDIGUNGEN = new EnumMap<>(Map.of(
             Auswahl.SCHERE, EnumSet.of(Auswahl.PAPIER, Auswahl.ECHSE),
             Auswahl.STEIN, EnumSet.of(Auswahl.SCHERE, Auswahl.ECHSE),
@@ -24,38 +15,43 @@ public class GameGUI extends JFrame {
             Auswahl.ECHSE, EnumSet.of(Auswahl.SPOCK, Auswahl.PAPIER),
             Auswahl.SPOCK, EnumSet.of(Auswahl.SCHERE, Auswahl.STEIN)
     ));
-
+    private final JTextPane textPane;
     private int siege = 0, niederlagen = 0, unentschieden = 0;
-    private final JTextArea textArea;
+    private final String css = "<style>" +
+            "body { text-align: center; color: white; font-size: 20px; } " +
+            "span { font-weight: bold; } " +
+            ".green { color: green; } " +
+            ".red { color: red; } " +
+            ".yellow { color: yellow; } " +
+            "</style>";
+
+    private enum Auswahl {
+        SCHERE, STEIN, PAPIER, ECHSE, SPOCK
+    }
 
     public GameGUI() {
         setTitle("SSPES - Game");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
-        textArea = new JTextArea();
-        textArea.setEditable(false);
-        textArea.setPreferredSize(new Dimension(400, 250));
-        textArea.setBackground(BACKGROUND_COLOR);
-        textArea.setForeground(TEXT_COLOR);
+        textPane = new JTextPane();
+        textPane.setEditable(false);
+        textPane.setPreferredSize(new Dimension(400, 250));
+        textPane.setBackground(BACKGROUND_COLOR);
+        textPane.setContentType("text/html");
+        textPane.setText("<html><head>" + css + "</head><body></body></html>");
 
         erstelleGUI();
     }
 
     private void erstelleGUI() {
-        add(textArea, BorderLayout.CENTER);
+        add(new JScrollPane(textPane), BorderLayout.CENTER);
         add(erstelleButtonPanel(), BorderLayout.EAST);
         add(erstelleUntererPanel(), BorderLayout.SOUTH);
 
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
-    }
-
-    private JButton erstelleButton(String text, ActionListener actionListener) {
-        JButton button = new JButton(text);
-        button.addActionListener(actionListener);
-        return button;
     }
 
     private JPanel erstelleButtonPanel() {
@@ -72,6 +68,12 @@ public class GameGUI extends JFrame {
         return buttonPanel;
     }
 
+    private JButton erstelleButton(String text, ActionListener actionListener) {
+        JButton button = new JButton(text);
+        button.addActionListener(actionListener);
+        return button;
+    }
+
     private JPanel erstelleUntererPanel() {
         JPanel untererPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         untererPanel.setBackground(BACKGROUND_COLOR);
@@ -86,53 +88,46 @@ public class GameGUI extends JFrame {
     }
 
     private void handleAction(ActionEvent e) {
-        resetTextColor();
         String actionCommand = e.getActionCommand();
         try {
             Auswahl benutzerAuswahl = Auswahl.valueOf(actionCommand.toUpperCase());
-            textArea.setText("");
             starteSpielzug(benutzerAuswahl);
         } catch (IllegalArgumentException ex) {
-            textArea.setText("Ungültige Auswahl.\n");
+            textPane.setText(formatHtml("<span>Ungültige Auswahl.</span>"));
         }
     }
 
     private void starteSpielzug(Auswahl benutzerAuswahl) {
         Auswahl computerAuswahl = Auswahl.values()[RANDOM.nextInt(Auswahl.values().length)];
-        textArea.append("\n\tDeine Wahl: " + benutzerAuswahl);
-        textArea.append("\n\tComputer wählte: " + computerAuswahl);
         ermittelGewinner(benutzerAuswahl, computerAuswahl);
     }
 
     private void ermittelGewinner(Auswahl benutzerAuswahl, Auswahl computerAuswahl) {
+        String htmlContent = String.format("Deine Wahl: %s<br>Computer wählte: %s<br>", benutzerAuswahl, computerAuswahl);
+
         if (benutzerAuswahl == computerAuswahl) {
-            textArea.append("\n\tUnentschieden!\n");
-            textArea.setForeground(DRAW_COLOR);
             unentschieden++;
+            htmlContent += "<span class='yellow'>Unentschieden!</span>";
         } else if (GEWINNBEDIGUNGEN.get(benutzerAuswahl).contains(computerAuswahl)) {
-            textArea.append("\n\t" + benutzerAuswahl + " schlägt " + computerAuswahl + "!\n\tDu gewinnst!");
-            textArea.setForeground(WIN_COLOR);
             siege++;
+            htmlContent += String.format("<span class='green'>%s schlägt %s!<br>Du gewinnst!</span>", benutzerAuswahl, computerAuswahl);
         } else {
-            textArea.append("\n\t" + computerAuswahl + " schlägt " + benutzerAuswahl + "!\n\tDu verlierst!");
-            textArea.setForeground(LOSE_COLOR);
             niederlagen++;
+            htmlContent += String.format("<span class='red'>%s schlägt %s!<br>Du verlierst!</span>", computerAuswahl, benutzerAuswahl);
         }
+
+        textPane.setText(formatHtml(htmlContent));
     }
 
     private void zeigeErgebnisse() {
-        resetTextColor();
-        textArea.setText("");
-        textArea.append("\n\tSpielzusammenfassung:\n");
-        textArea.append("\tSiege: " + siege + "\n");
-        textArea.append("\tNiederlagen: " + niederlagen + "\n");
-        textArea.append("\tUnentschieden: " + unentschieden + "\n");
+        String htmlContent = String.format("Spielzusammenfassung:<br>Siege: %d<br>Niederlagen: %d<br>Unentschieden: %d",
+                siege, niederlagen, unentschieden);
+        textPane.setText(formatHtml(htmlContent));
     }
 
     private void beendenAktion() {
         new Thread(() -> {
-            resetTextColor();
-            textArea.setText("\n\n\t\tGood bye");
+            SwingUtilities.invokeLater(() -> textPane.setText(formatHtml("<span>Good bye</span>")));
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException ex) {
@@ -142,8 +137,8 @@ public class GameGUI extends JFrame {
         }).start();
     }
 
-    private void resetTextColor() {
-        textArea.setForeground(TEXT_COLOR);
+    private String formatHtml(String content) {
+        return "<html><head>" + css + "</head><body>" + content + "</body></html>";
     }
 
     private String getTooltipForAuswahl(Auswahl auswahl) {
