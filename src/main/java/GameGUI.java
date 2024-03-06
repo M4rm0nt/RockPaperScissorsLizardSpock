@@ -53,6 +53,7 @@ public class GameGUI extends JFrame {
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
+        setResizable(false);
     }
 
     private JPanel erstelleButtonPanel() {
@@ -125,8 +126,7 @@ public class GameGUI extends JFrame {
             textPane.setText(zuletztAngezeigterText);
         } else {
             zuletztAngezeigterText = textPane.getText();
-            String htmlContent = String.format("Spielzusammenfassung:<br>Siege: %d<br>Niederlagen: %d<br>Unentschieden: %d",
-                    siege, niederlagen, unentschieden);
+            String htmlContent = String.format("Spielzusammenfassung<br>Siege: %d<br>Niederlagen: %d<br>Unentschieden: %d", siege, niederlagen, unentschieden);
             textPane.setText(formatHtml(htmlContent));
         }
         istStatistikSichtbar = !istStatistikSichtbar;
@@ -134,7 +134,9 @@ public class GameGUI extends JFrame {
 
     private void beendenAktion() {
         new Thread(() -> {
-            SwingUtilities.invokeLater(() -> textPane.setText(formatHtml("<span>Good bye</span>")));
+            SwingUtilities.invokeLater(() -> textPane.setText(formatHtml(
+                    "<div style='text-align: center; font-size: 35px;'>Good bye</div>"
+            )));
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException ex) {
