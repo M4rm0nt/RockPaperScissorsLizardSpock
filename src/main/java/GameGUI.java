@@ -2,7 +2,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
-import java.util.List;
 
 public class GameGUI extends JFrame {
     private static final Random RANDOM = new Random();
@@ -13,14 +12,6 @@ public class GameGUI extends JFrame {
     private enum Auswahl {
         STEIN, PAPIER, SCHERE, ECHSE, SPOCK
     }
-
-    private static final List<Auswahl> AUSWAHLMAP = List.of(
-            Auswahl.STEIN,
-            Auswahl.PAPIER,
-            Auswahl.SCHERE,
-            Auswahl.ECHSE,
-            Auswahl.SPOCK
-    );
 
     private static final EnumMap<Auswahl, Set<Auswahl>> GEWINNBEDIGUNGEN = new EnumMap<>(Map.of(
             Auswahl.STEIN, EnumSet.of(Auswahl.SCHERE, Auswahl.ECHSE),
@@ -74,7 +65,6 @@ public class GameGUI extends JFrame {
         setVisible(true);
     }
 
-
     private void handleAction(ActionEvent e) {
         String actionCommand = e.getActionCommand();
         try {
@@ -87,10 +77,10 @@ public class GameGUI extends JFrame {
     }
 
     private void playGame(Auswahl benutzerAuswahl) {
-        Auswahl computerAuswahl = AUSWAHLMAP.get(RANDOM.nextInt(AUSWAHLMAP.size()));
+        Auswahl computerAuswahl = Auswahl.values()[RANDOM.nextInt(Auswahl.values().length)];
 
-        textArea.append("Deine Wahl: " + benutzerAuswahl + "\n");
-        textArea.append("Computer wählte: " + computerAuswahl + "\n");
+        textArea.append("Deine Wahl: " + benutzerAuswahl + "\n\n");
+        textArea.append("Computer wählte: " + computerAuswahl + "\n\n");
 
         ermittelGewinner(benutzerAuswahl, computerAuswahl);
     }
@@ -101,11 +91,11 @@ public class GameGUI extends JFrame {
             unentschieden++;
         } else if (GEWINNBEDIGUNGEN.get(benutzerAuswahl).contains(computerAuswahl)) {
             textArea.append(benutzerAuswahl + " schlägt " + computerAuswahl + "!\n");
-            textArea.append("Du gewinnst!");
+            textArea.append("\nDu gewinnst!");
             siege++;
         } else {
             textArea.append(computerAuswahl + " schlägt " + benutzerAuswahl + "!\n");
-            textArea.append("Du verlierst!");
+            textArea.append("\nDu verlierst!");
             niederlagen++;
         }
     }
@@ -113,9 +103,9 @@ public class GameGUI extends JFrame {
     private void zeigeErgebnisse() {
         textArea.setText("");
         textArea.append("Spielzusammenfassung:\n\n");
-        textArea.append("\tSiege: " + siege + "\n");
-        textArea.append("\tNiederlagen: " + niederlagen + "\n");
-        textArea.append("\tUnentschieden: " + unentschieden + "\n");
+        textArea.append("Siege: " + siege + "\n");
+        textArea.append("Niederlagen: " + niederlagen + "\n");
+        textArea.append("Unentschieden: " + unentschieden + "\n");
     }
 
     public static void main(String[] args) {
