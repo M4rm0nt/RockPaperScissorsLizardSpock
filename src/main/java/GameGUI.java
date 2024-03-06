@@ -40,7 +40,7 @@ public class GameGUI extends JFrame {
         textPane.setPreferredSize(new Dimension(400, 250));
         textPane.setBackground(BACKGROUND_COLOR);
         textPane.setContentType("text/html");
-        textPane.setText("<html><head>" + css + "</head><body></body></html>");
+        textPane.setText(HtmlFormatter.formatWithCss("<div>Willkommen zum Spiel</div>"));
 
         erstelleGUI();
     }
@@ -147,8 +147,9 @@ public class GameGUI extends JFrame {
     }
 
     private String formatHtml(String content) {
-        return "<html><head>" + css + "</head><body>" + content + "</body></html>";
+        return HtmlFormatter.formatWithCss(content);
     }
+
 
     private String getTooltipForAuswahl(Auswahl auswahl) {
         Set<Auswahl> gewinntGegen = GEWINNBEDIGUNGEN.get(auswahl);
