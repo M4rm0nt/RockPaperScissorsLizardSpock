@@ -1,68 +1,80 @@
 import java.util.*;
 
 public class Main {
+    private static final Random random = new Random();
+
+    private enum Auswahl {
+        STEIN, PAPIER, SCHERE, ECHSE, SPOCK
+    }
+
+    private static final Map<Integer, Auswahl> auswahlMap = Map.of(
+            1, Auswahl.STEIN,
+            2, Auswahl.PAPIER,
+            3, Auswahl.SCHERE,
+            4, Auswahl.ECHSE,
+            5, Auswahl.SPOCK
+    );
+
+    private static final Map<Auswahl, Set<Auswahl>> gewinnBedigungen = new EnumMap<>(Map.of(
+            Auswahl.STEIN, EnumSet.of(Auswahl.SCHERE, Auswahl.ECHSE),
+            Auswahl.PAPIER, EnumSet.of(Auswahl.STEIN, Auswahl.SPOCK),
+            Auswahl.SCHERE, EnumSet.of(Auswahl.PAPIER, Auswahl.ECHSE),
+            Auswahl.ECHSE, EnumSet.of(Auswahl.SPOCK, Auswahl.PAPIER),
+            Auswahl.SPOCK, EnumSet.of(Auswahl.SCHERE, Auswahl.STEIN)
+    ));
 
     public static void main(String[] args) {
+        System.out.println("Willkommen zu Stein, Papier, Schere, Echse, Spock!\n");
+        System.out.println("Wähle: 1 für Stein, 2 für Papier, 3 für Schere, 4 für Echse, 5 für Spock, 6 zum Beenden.");
 
-        Scanner scanner = new Scanner(System.in);
-        Random random = new Random();
+        try (Scanner scanner = new Scanner(System.in)) {
+            while (true) {
+                System.out.print("\nDeine Wahl (1-6): ");
+                int benutzerWahl = pruefeInput(scanner);
 
-        Map<Integer, String> auswahlMoeglichkeiten = new HashMap<>();
-        auswahlMoeglichkeiten.put(1, "Stein");
-        auswahlMoeglichkeiten.put(2, "Papier");
-        auswahlMoeglichkeiten.put(3, "Schere");
-        auswahlMoeglichkeiten.put(4, "Echse");
-        auswahlMoeglichkeiten.put(5, "Spock");
+                if (benutzerWahl == 6) {
+                    System.out.println("Spiel beendet.");
+                    break;
+                }
 
-        Map<String, Set<String>> gewinnBedigungen = new HashMap<>();
-        gewinnBedigungen.put("Stein", new HashSet<>(Set.of("Schere", "Echse")));
-        gewinnBedigungen.put("Papier", new HashSet<>(Set.of("Stein", "Spock")));
-        gewinnBedigungen.put("Schere", new HashSet<>(Set.of("Papier", "Echse")));
-        gewinnBedigungen.put("Echse", new HashSet<>(Set.of("Spock", "Papier")));
-        gewinnBedigungen.put("Spock", new HashSet<>(Set.of("Schere", "Stein")));
-
-        System.out.println("Willkommen zu Stein, Papier, Schere, Echse, Spock!");
-        System.out.println("\nWähle: 1 für Rock, 2 für Paper, 3 für Scissors, 4 für Lizard, 5 für Spock.\nZum Beenden gib 'Quit' ein.");
-
-        while (true) {
-
-            System.out.print("\nDeine Wahl (1-5): ");
-            String benutzerEingabe = scanner.nextLine();
-
-            if (benutzerEingabe.equalsIgnoreCase("Quit")) {
-                System.out.println("Spiel beendet");
-                break;
-            }
-
-            int benutzerWahl;
-
-            try {
-                benutzerWahl = Integer.parseInt(benutzerEingabe);
-            } catch (NumberFormatException e) {
-                System.out.println("Ungültige Eingabe. Bitte eine Zahl zwischen 1 und 5 eingeben.");
-                continue;
-            }
-
-            if (!auswahlMoeglichkeiten.containsKey(benutzerWahl)) {
-                System.out.println("Ungültige Wahl. Bitte wähle zwischen 1 und 5.");
-                continue;
-            }
-
-            String benutzerAuswahl = auswahlMoeglichkeiten.get(benutzerWahl);
-            String computerAuswahl = auswahlMoeglichkeiten.get(random.nextInt(5) + 1);
-
-            System.out.println("\n");
-            System.out.println("Deine Wahl: " + benutzerAuswahl);
-            System.out.println("Computer wählte: " + computerAuswahl);
-
-            if (benutzerAuswahl.equals(computerAuswahl)) {
-                System.out.println("\nUnentschieden!");
-            } else if (gewinnBedigungen.get(benutzerAuswahl).contains(computerAuswahl)) {
-                System.out.println("\nDu gewinnst! Deine " + benutzerAuswahl + " schlägt " + computerAuswahl + "!");
-            } else {
-                System.out.println("\nDu verlierst! Deine " + benutzerAuswahl + " verliert gegen " + computerAuswahl + "!");
+                playGame(benutzerWahl);
+                System.out.println("Wähle: 1 für Stein, 2 für Papier, 3 für Schere, 4 für Echse, 5 für Spock, 6 zum Beenden.");
             }
         }
-        scanner.close();
+    }
+
+    private static int pruefeInput(Scanner scanner) {
+        int input;
+        do {
+            while (!scanner.hasNextInt()) {
+                System.out.println("Ungültige Eingabe. Bitte geben Sie eine Zahl ein.");
+                scanner.next();
+            }
+            input = scanner.nextInt();
+            if (input < 1 || input > 6) {
+                System.out.println("Bitte geben Sie eine Zahl zwischen 1 und 6 ein.");
+            }
+        } while (input < 1 || input > 6);
+        return input;
+    }
+
+    private static void playGame(int benutzerWahl) {
+        Auswahl benutzerAuswahl = auswahlMap.get(benutzerWahl);
+        Auswahl computerAuswahl = auswahlMap.get(random.nextInt(5) + 1);
+
+        System.out.println("\nDeine Wahl: " + benutzerAuswahl);
+        System.out.println("Computer wählte: " + computerAuswahl);
+
+        ermittelGewinner(benutzerAuswahl, computerAuswahl);
+    }
+
+    private static void ermittelGewinner(Auswahl benutzerAuswahl, Auswahl computerAuswahl) {
+        if (benutzerAuswahl == computerAuswahl) {
+            System.out.println("Unentschieden!");
+        } else if (gewinnBedigungen.get(benutzerAuswahl).contains(computerAuswahl)) {
+            System.out.println("Du gewinnst! " + benutzerAuswahl + " schlägt " + computerAuswahl + "!");
+        } else {
+            System.out.println("Du verlierst! " + computerAuswahl + " schlägt " + benutzerAuswahl + "!");
+        }
     }
 }
