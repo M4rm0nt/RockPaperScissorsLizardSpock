@@ -100,20 +100,22 @@ public class GameGUI extends JFrame {
             textArea.append("Unentschieden!\n");
             unentschieden++;
         } else if (GEWINNBEDIGUNGEN.get(benutzerAuswahl).contains(computerAuswahl)) {
-            textArea.append("Du gewinnst! " + benutzerAuswahl + " schlägt " + computerAuswahl + "!\n");
+            textArea.append(benutzerAuswahl + " schlägt " + computerAuswahl + "!\n");
+            textArea.append("Du gewinnst!");
             siege++;
         } else {
-            textArea.append("Du verlierst! " + computerAuswahl + " schlägt " + benutzerAuswahl + "!\n");
+            textArea.append(computerAuswahl + " schlägt " + benutzerAuswahl + "!\n");
+            textArea.append("Du verlierst!");
             niederlagen++;
         }
     }
 
     private void zeigeErgebnisse() {
         textArea.setText("");
-        textArea.append("Spielzusammenfassung:\n");
-        textArea.append("Siege: " + siege + "\n");
-        textArea.append("Niederlagen: " + niederlagen + "\n");
-        textArea.append("Unentschieden: " + unentschieden + "\n");
+        textArea.append("Spielzusammenfassung:\n\n");
+        textArea.append("\tSiege: " + siege + "\n");
+        textArea.append("\tNiederlagen: " + niederlagen + "\n");
+        textArea.append("\tUnentschieden: " + unentschieden + "\n");
     }
 
     public static void main(String[] args) {
