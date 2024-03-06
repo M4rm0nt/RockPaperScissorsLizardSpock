@@ -8,6 +8,9 @@ public class GameGUI extends JFrame {
 
     private static final Random RANDOM = new Random();
     private static final Color BACKGROUND_COLOR = Color.DARK_GRAY;
+    private enum Auswahl {
+        SCHERE, STEIN, PAPIER, ECHSE, SPOCK
+    }
     private static final EnumMap<Auswahl, Set<Auswahl>> GEWINNBEDIGUNGEN = new EnumMap<>(Map.of(
             Auswahl.SCHERE, EnumSet.of(Auswahl.PAPIER, Auswahl.ECHSE),
             Auswahl.STEIN, EnumSet.of(Auswahl.SCHERE, Auswahl.ECHSE),
@@ -17,6 +20,8 @@ public class GameGUI extends JFrame {
     ));
     private final JTextPane textPane;
     private int siege = 0, niederlagen = 0, unentschieden = 0;
+    private boolean istStatistikSichtbar = false;
+    private String zuletztAngezeigterText = "";
     private final String css = "<style>" +
             "body { text-align: center; color: white; font-size: 20px; } " +
             "span { font-weight: bold; } " +
@@ -24,10 +29,6 @@ public class GameGUI extends JFrame {
             ".red { color: red; } " +
             ".yellow { color: yellow; } " +
             "</style>";
-
-    private enum Auswahl {
-        SCHERE, STEIN, PAPIER, ECHSE, SPOCK
-    }
 
     public GameGUI() {
         setTitle("SSPES - Game");
@@ -47,7 +48,7 @@ public class GameGUI extends JFrame {
     private void erstelleGUI() {
         add(new JScrollPane(textPane), BorderLayout.CENTER);
         add(erstelleButtonPanel(), BorderLayout.EAST);
-        add(erstelleUntererPanel(), BorderLayout.SOUTH);
+        add(erstelleUntererOptionPanel(), BorderLayout.SOUTH);
 
         pack();
         setLocationRelativeTo(null);
@@ -74,7 +75,7 @@ public class GameGUI extends JFrame {
         return button;
     }
 
-    private JPanel erstelleUntererPanel() {
+    private JPanel erstelleUntererOptionPanel() {
         JPanel untererPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         untererPanel.setBackground(BACKGROUND_COLOR);
 
@@ -120,9 +121,15 @@ public class GameGUI extends JFrame {
     }
 
     private void zeigeErgebnisse() {
-        String htmlContent = String.format("Spielzusammenfassung:<br>Siege: %d<br>Niederlagen: %d<br>Unentschieden: %d",
-                siege, niederlagen, unentschieden);
-        textPane.setText(formatHtml(htmlContent));
+        if (istStatistikSichtbar) {
+            textPane.setText(zuletztAngezeigterText);
+        } else {
+            zuletztAngezeigterText = textPane.getText();
+            String htmlContent = String.format("Spielzusammenfassung:<br>Siege: %d<br>Niederlagen: %d<br>Unentschieden: %d",
+                    siege, niederlagen, unentschieden);
+            textPane.setText(formatHtml(htmlContent));
+        }
+        istStatistikSichtbar = !istStatistikSichtbar;
     }
 
     private void beendenAktion() {
